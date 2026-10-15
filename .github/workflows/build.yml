@@ -1,1 +1,30 @@
-# KBM Music - Build will be added
+name: KBM Builder
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - uses: android-actions/setup-android@v3
+      - name: Build
+        run: |
+          echo "include ':app'" > settings.gradle
+          echo "plugins { id 'com.android.application' version '8.2.0' apply false }" > build.gradle
+          mkdir -p app/src/main/java/com/kbm/music
+          echo "plugins { id 'com.android.application' }
+          android { namespace 'com.kbm.music'
+          compileSdk 34
+          defaultConfig { applicationId 'com.kbm.music'; minSdk 21; targetSdk 34; versionCode 1; versionName '1.0' } }" > app/build.gradle
+          echo "<manifest xmlns:android='http://schemas.android.com/apk/res/android'><application android:label='KBM Music'><activity android:name='.MainActivity' android:exported='true'><intent-filter><action android:name='android.intent.action.MAIN'/><category android:name='android.intent.category.LAUNCHER'/></intent-filter></activity></application></manifest>" > app/src/main/AndroidManifest.xml
+          echo "package com.kbm.music; import android.app.Activity; import android.os.Bundle; import android.widget.TextView; public class MainActivity extends Activity { protected void onCreate(Bundle b){ super.onCreate(b); TextView t=new TextView(this); t.setText(\"KBM Music\"); setContentView(t);} }" > app/src/main/java/com/kbm/music/MainActivity.java
+          gradle wrapper
+          ./gradlew bundleRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KBM-AAB
+          path: app/build/outputs/bundle/release/*.aab
